@@ -31,6 +31,38 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET pencarian pengaduan berdasarkan nama pelapor
+router.get('/search', async (req, res) => {
+    try {
+        const { reporter_name } = req.query;
+
+        if (!reporter_name) {
+            return res.status(400).json({
+                message: 'Parameter reporter_name wajib diisi'
+            });
+        }
+
+        const result = await pool.query(
+            `SELECT *
+             FROM reports
+             WHERE reporter_name ILIKE $1
+             ORDER BY created_at DESC`,
+            [`%${reporter_name}%`]
+        );
+
+        res.status(200).json({
+            message: 'Berhasil mencari data pengaduan',
+            data: result.rows
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Gagal mencari data pengaduan',
+            error: error.message
+        });
+    }
+});
+
 // GET: Mengambil satu data berdasarkan ID
 router.get('/:id', async (req, res) => {
     try {
